@@ -52,7 +52,6 @@ const challenges = [
 
 let currentChallenge = {};
 let selectedMarketItems = [];
-let currentPhase = 1; // 1: Corte, 2: Cocção, 3: Empratamento
 
 let timeLeft = 50;
 let timerInterval;
@@ -60,20 +59,20 @@ let rivalInterval;
 let playerScore = 0;
 let rivalScore = 0;
 
-// Variáveis para animações dos mini-games
+// Variáveis independentes para os mini-games de movimento
 let cutPosition = 0;
-let cutDirection = 3;
-let cutInterval;
+let cutDirection = 2;
+let cutInterval = null;
 
 let cookPosition = 0;
-let cookDirection = 2;
-let cookInterval;
+let cookDirection = 2.5;
+let cookInterval = null;
 
 startBtn.addEventListener('click', openMarket);
 confirmMarketBtn.addEventListener('click', startCookingPhase);
 nextRoundBtn.addEventListener('click', openMarket);
 
-// Ações dos Mini-games
+// Ações dos botões dos Mini-games
 actionBtnCut.addEventListener('click', evaluateCut);
 actionBtnCook.addEventListener('click', evaluateCook);
 actionBtnPlate.addEventListener('click', evaluatePlate);
@@ -86,7 +85,6 @@ function openMarket() {
     selectedMarketItems = [];
     confirmMarketBtn.disabled = true;
 
-    // Sorteia desafio
     currentChallenge = challenges[Math.floor(Math.random() * challenges.length)];
     marketThemeTitle.textContent = `Desafio: ${currentChallenge.theme}`;
 
@@ -95,7 +93,6 @@ function openMarket() {
 
 function renderMarketIngredients() {
     ingredientsGrid.innerHTML = '';
-    // Embaralha pool
     const shuffledPool = [...currentChallenge.pool].sort(() => 0.5 - Math.random());
 
     shuffledPool.forEach(item => {
@@ -126,7 +123,6 @@ function startCookingPhase() {
 
     timeLeft = 50;
     timerDisplay.textContent = timeLeft;
-    currentPhase = 1;
 
     setupCutPhase();
     startTimers();
@@ -144,7 +140,6 @@ function startTimers() {
         }
     }, 1000);
 
-    // Rival IA pontuando em segundo plano
     rivalInterval = setInterval(() => {
         rivalScore += 20;
         rivalScoreDisplay.textContent = rivalScore;
@@ -154,17 +149,21 @@ function startTimers() {
 // --- FASE 1: MINI-GAME DE CORTE ---
 function setupCutPhase() {
     currentPhaseTitle.textContent = "Etapa 1/3: Estação de Corte";
-    phaseInstruction.textContent = "Clique no botão quando o cursor estiver na faixa verde!";
+    phaseInstruction.textContent = "Clique em 'Cortar' quando o cursor estiver na faixa verde!";
     
     minigameCut.classList.remove('hidden');
     minigameCook.classList.add('hidden');
     minigamePlate.classList.add('hidden');
 
     cutPosition = 0;
+    cutDirection = 2;
     clearInterval(cutInterval);
+    
     cutInterval = setInterval(() => {
         cutPosition += cutDirection;
-        if (cutPosition >= 95 || cutPosition <= 0) cutDirection *= -1;
+        if (cutPosition >= 95 || cutPosition <= 0) {
+            cutDirection *= -1;
+        }
         timingCursor.style.left = cutPosition + '%';
     }, 20);
 }
@@ -175,26 +174,30 @@ function evaluateCut() {
     if (cutPosition >= 45 && cutPosition <= 60) {
         playerScore += 50;
         playerScoreDisplay.textContent = playerScore;
-        setupCookPhase();
     } else {
-        alert("Corte impreciso! Você perdeu tempo ajustando a faca.");
-        setupCookPhase(); // Avança mesmo errando, mas com penalidade de pontuação
+        playerScore += 10; // Pontuação menor por errar o tempo
+        playerScoreDisplay.textContent = playerScore;
     }
+    setupCookPhase();
 }
 
 // --- FASE 2: MINI-GAME DE COCÇÃO ---
 function setupCookPhase() {
     currentPhaseTitle.textContent = "Etapa 2/3: Fogão & Cocção";
-    phaseInstruction.textContent = "Pare a temperatura exatamente no ponto verde!";
+    phaseInstruction.textContent = "Clique em 'Tirar do Fogo' na zona verde!";
 
     minigameCut.classList.add('hidden');
     minigameCook.classList.remove('hidden');
 
     cookPosition = 0;
+    cookDirection = 2.5;
     clearInterval(cookInterval);
+
     cookInterval = setInterval(() => {
-        cookPosition += cookDirection * 1.5;
-        if (cookPosition >= 95 || cookPosition <= 0) cookDirection *= -1;
+        cookPosition += cookDirection;
+        if (cookPosition >= 95 || cookPosition <= 0) {
+            cookDirection *= -1;
+        }
         tempIndicator.style.left = cookPosition + '%';
     }, 20);
 }
@@ -205,17 +208,17 @@ function evaluateCook() {
     if (cookPosition >= 60 && cookPosition <= 80) {
         playerScore += 70;
         playerScoreDisplay.textContent = playerScore;
-        setupPlatePhase();
     } else {
-        alert("O prato passou do ponto ou ficou cru!");
-        setupPlatePhase();
+        playerScore += 15;
+        playerScoreDisplay.textContent = playerScore;
     }
+    setupPlatePhase();
 }
 
 // --- FASE 3: MINI-GAME DE EMPRATAMENTO ---
 function setupPlatePhase() {
     currentPhaseTitle.textContent = "Etapa 3/3: Passagem (Empratamento)";
-    phaseInstruction.textContent = "Deixe o prato impecável para a avaliação final!";
+    phaseInstruction.textContent = "Finalize o prato para servir aos jurados!";
 
     minigameCook.classList.add('hidden');
     minigamePlate.classList.remove('hidden');
@@ -230,11 +233,12 @@ function evaluatePlate() {
 function finishAndEvaluateDish() {
     clearInterval(timerInterval);
     clearInterval(rivalInterval);
+    clearInterval(cutInterval);
+    clearInterval(cookInterval);
 
     gameScreen.classList.add('hidden');
     resultScreen.classList.remove('hidden');
 
-    // Valida se os ingredientes escolhidos no mercado batem com o desafio
     let correctCount = 0;
     currentChallenge.correct.forEach(item => {
         if (selectedMarketItems.includes(item)) correctCount++;
@@ -248,13 +252,15 @@ function finishAndEvaluateDish() {
         feedbackText.textContent = `O chef Fogaça comentou: "Você acertou quase tudo, mas vacilou em um dos ingredientes da caixa misteriosa. Tem potencial!".`;
     } else {
         resultTitle.textContent = "❌ Desastre na Cozinha!";
-        feedbackText.textContent = `Os jurados detestaram. "Isso aqui é um insulto à gastronomia!", disparou a chef Helena. Você foi mal nas escolhas do mercado.`;
+        feedbackText.textContent = `Os jurados detestaram. "Isso aqui é um insulto à gastronomia!", disparou a chef Helena. Você errou os ingredientes da prova.`;
     }
 }
 
 function endRoundByTimeout() {
     clearInterval(timerInterval);
     clearInterval(rivalInterval);
+    clearInterval(cutInterval);
+    clearInterval(cookInterval);
 
     gameScreen.classList.add('hidden');
     resultScreen.classList.remove('hidden');

@@ -173,7 +173,6 @@ header p {
     width: 6px;
     height: 100%;
     background-color: #ff3b30;
-    transition: left 0.05s linear;
 }
 
 /* Mini-game 2: Cocção (Temperatura) */
@@ -221,12 +220,6 @@ header p {
 .plate-draggable {
     font-size: 2rem;
     cursor: pointer;
-    animation: bounce 1s infinite alternate;
-}
-
-@keyframes bounce {
-    0% { transform: scale(1); }
-    100% { transform: scale(1.15); }
 }
 
 .chef-feedback {
