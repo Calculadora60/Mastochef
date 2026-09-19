@@ -7,16 +7,18 @@ const startBtn = document.getElementById('start-btn');
 const confirmMarketBtn = document.getElementById('confirm-market-btn');
 const nextRoundBtn = document.getElementById('next-round-btn');
 
+const roundIndicator = document.getElementById('round-indicator');
 const marketThemeTitle = document.getElementById('market-theme-title');
 const ingredientsGrid = document.getElementById('ingredients-grid');
 const timerDisplay = document.getElementById('timer');
 const playerScoreDisplay = document.getElementById('player-score');
-const rivalScoreDisplay = document.getElementById('rival-score');
+
+const rival1Info = document.getElementById('rival-1-info');
+const rival2Info = document.getElementById('rival-2-info');
 
 const currentPhaseTitle = document.getElementById('current-phase-title');
 const phaseInstruction = document.getElementById('phase-instruction');
 
-// Mini-games elements
 const minigameCut = document.getElementById('minigame-cut');
 const minigameCook = document.getElementById('minigame-cook');
 const minigamePlate = document.getElementById('minigame-plate');
@@ -31,8 +33,8 @@ const actionBtnPlate = document.getElementById('action-btn-plate');
 const resultTitle = document.getElementById('result-title');
 const feedbackText = document.getElementById('feedback-text');
 
-// Dados dos Desafios MasterChef
-const challenges = [
+// Base de dados expandida com várias receitas e ingredientes falsos/certos
+const challengesList = [
     {
         theme: "A Grande Massa Italiana",
         correct: ["Massa", "Tomate", "Manjericão"],
@@ -47,45 +49,74 @@ const challenges = [
         theme: "Prato Principal: Carne e Especiarias",
         correct: ["Carne Bovina", "Batata", "Alecrim"],
         pool: ["Carne Bovina", "Batata", "Alecrim", "Massa", "Morango", "Açúcar"]
+    },
+    {
+        theme: "Frutos do Mar Frescos",
+        correct: ["Salmão", "Limão", "Aspargos"],
+        pool: ["Salmão", "Limão", "Aspargos", "Chocolate", "Carne Bovina", "Farinha"]
+    },
+    {
+        theme: "Comida Conforto de Inverno",
+        correct: ["Frango", "Cebola", "Caldo de Galinha"],
+        pool: ["Frango", "Cebola", "Caldo de Galinha", "Morango", "Massa", "Sorvete"]
     }
 ];
+
+let currentRound = 1;
+const maxRounds = 3;
 
 let currentChallenge = {};
 let selectedMarketItems = [];
 
-let timeLeft = 50;
+let timeLeft = 45;
 let timerInterval;
 let rivalInterval;
 let playerScore = 0;
-let rivalScore = 0;
 
-// Variáveis independentes para os mini-games de movimento
+// NPCs Concorrentes
+let rivals = [
+    { name: "Chef Henrique", score: 0 },
+    { name: "Chef Ana", score: 0 }
+];
+
+// Mini-games states
 let cutPosition = 0;
-let cutDirection = 2;
+let cutDirection = 2.5;
 let cutInterval = null;
 
 let cookPosition = 0;
-let cookDirection = 2.5;
+let cookDirection = 3;
 let cookInterval = null;
 
-startBtn.addEventListener('click', openMarket);
+startBtn.addEventListener('click', startSeason);
 confirmMarketBtn.addEventListener('click', startCookingPhase);
-nextRoundBtn.addEventListener('click', openMarket);
+nextRoundBtn.addEventListener('click', handleNextRound);
 
-// Ações dos botões dos Mini-games
 actionBtnCut.addEventListener('click', evaluateCut);
 actionBtnCook.addEventListener('click', evaluateCook);
 actionBtnPlate.addEventListener('click', evaluatePlate);
 
-function openMarket() {
+function startSeason() {
+    currentRound = 1;
+    playerScore = 0;
+    rivals[0].score = 0;
+    rivals[1].score = 0;
+    playerScoreDisplay.textContent = playerScore;
+    
     startScreen.classList.add('hidden');
+    openMarket();
+}
+
+function openMarket() {
     resultScreen.classList.add('hidden');
     marketScreen.classList.remove('hidden');
 
+    roundIndicator.textContent = `Rodada ${currentRound} de ${maxRounds}`;
     selectedMarketItems = [];
     confirmMarketBtn.disabled = true;
 
-    currentChallenge = challenges[Math.floor(Math.random() * challenges.length)];
+    // Sorteia um desafio aleatório da lista grande
+    currentChallenge = challengesList[Math.floor(Math.random() * challengesList.length)];
     marketThemeTitle.textContent = `Desafio: ${currentChallenge.theme}`;
 
     renderMarketIngredients();
@@ -121,7 +152,7 @@ function startCookingPhase() {
     marketScreen.classList.add('hidden');
     gameScreen.classList.remove('hidden');
 
-    timeLeft = 50;
+    timeLeft = 45;
     timerDisplay.textContent = timeLeft;
 
     setupCutPhase();
@@ -140,48 +171,47 @@ function startTimers() {
         }
     }, 1000);
 
+    // Os NPCs pontuam com base no desempenho aleatório simulado a cada segundos
     rivalInterval = setInterval(() => {
-        rivalScore += 20;
-        rivalScoreDisplay.textContent = rivalScore;
-    }, 4000);
+        rivals[0].score += Math.floor(Math.random() * 25) + 10;
+        rivals[1].score += Math.floor(Math.random() * 25) + 10;
+        
+        rival1Info.textContent = `👤 ${rivals[0].name}: ${rivals[0].score} pts`;
+        rival2Info.textContent = `👤 ${rivals[1].name}: ${rivals[1].score} pts`;
+    }, 3000);
 }
 
-// --- FASE 1: MINI-GAME DE CORTE ---
+// --- FASE 1: CORTE ---
 function setupCutPhase() {
     currentPhaseTitle.textContent = "Etapa 1/3: Estação de Corte";
-    phaseInstruction.textContent = "Clique em 'Cortar' quando o cursor estiver na faixa verde!";
+    phaseInstruction.textContent = "Clique em 'Cortar' na faixa verde!";
     
     minigameCut.classList.remove('hidden');
     minigameCook.classList.add('hidden');
     minigamePlate.classList.add('hidden');
 
     cutPosition = 0;
-    cutDirection = 2;
     clearInterval(cutInterval);
     
     cutInterval = setInterval(() => {
         cutPosition += cutDirection;
-        if (cutPosition >= 95 || cutPosition <= 0) {
-            cutDirection *= -1;
-        }
+        if (cutPosition >= 95 || cutPosition <= 0) cutDirection *= -1;
         timingCursor.style.left = cutPosition + '%';
-    }, 20);
+    }, 15);
 }
 
 function evaluateCut() {
     clearInterval(cutInterval);
-    // Faixa verde está entre 45% e 60%
     if (cutPosition >= 45 && cutPosition <= 60) {
-        playerScore += 50;
-        playerScoreDisplay.textContent = playerScore;
+        playerScore += 70;
     } else {
-        playerScore += 10; // Pontuação menor por errar o tempo
-        playerScoreDisplay.textContent = playerScore;
+        playerScore += 20;
     }
+    playerScoreDisplay.textContent = playerScore;
     setupCookPhase();
 }
 
-// --- FASE 2: MINI-GAME DE COCÇÃO ---
+// --- FASE 2: COCÇÃO ---
 function setupCookPhase() {
     currentPhaseTitle.textContent = "Etapa 2/3: Fogão & Cocção";
     phaseInstruction.textContent = "Clique em 'Tirar do Fogo' na zona verde!";
@@ -190,35 +220,30 @@ function setupCookPhase() {
     minigameCook.classList.remove('hidden');
 
     cookPosition = 0;
-    cookDirection = 2.5;
     clearInterval(cookInterval);
 
     cookInterval = setInterval(() => {
         cookPosition += cookDirection;
-        if (cookPosition >= 95 || cookPosition <= 0) {
-            cookDirection *= -1;
-        }
+        if (cookPosition >= 95 || cookPosition <= 0) cookDirection *= -1;
         tempIndicator.style.left = cookPosition + '%';
-    }, 20);
+    }, 15);
 }
 
 function evaluateCook() {
     clearInterval(cookInterval);
-    // Zona verde está entre 60% e 80%
     if (cookPosition >= 60 && cookPosition <= 80) {
-        playerScore += 70;
-        playerScoreDisplay.textContent = playerScore;
+        playerScore += 90;
     } else {
-        playerScore += 15;
-        playerScoreDisplay.textContent = playerScore;
+        playerScore += 30;
     }
+    playerScoreDisplay.textContent = playerScore;
     setupPlatePhase();
 }
 
-// --- FASE 3: MINI-GAME DE EMPRATAMENTO ---
+// --- FASE 3: EMPRATAMENTO ---
 function setupPlatePhase() {
     currentPhaseTitle.textContent = "Etapa 3/3: Passagem (Empratamento)";
-    phaseInstruction.textContent = "Finalize o prato para servir aos jurados!";
+    phaseInstruction.textContent = "Finalize o prato rapidamente!";
 
     minigameCook.classList.add('hidden');
     minigamePlate.classList.remove('hidden');
@@ -231,10 +256,7 @@ function evaluatePlate() {
 }
 
 function finishAndEvaluateDish() {
-    clearInterval(timerInterval);
-    clearInterval(rivalInterval);
-    clearInterval(cutInterval);
-    clearInterval(cookInterval);
+    stopAllTimers();
 
     gameScreen.classList.add('hidden');
     resultScreen.classList.remove('hidden');
@@ -244,29 +266,73 @@ function finishAndEvaluateDish() {
         if (selectedMarketItems.includes(item)) correctCount++;
     });
 
+    let marketBonus = correctCount * 50;
+    playerScore += marketBonus;
+    playerScoreDisplay.textContent = playerScore;
+
     if (correctCount === 3) {
-        resultTitle.textContent = "🏆 Prato Digno de MasterChef!";
-        feedbackText.textContent = `Os jurados provaram e adoraram! "Os sabores estão perfeitos, a técnica de corte foi limpa e o ponto da proteína impecável", elogiou o chef Jacquin.`;
-    } else if (correctCount === 2) {
-        resultTitle.textContent = "🥈 Bom, mas faltou harmonia";
-        feedbackText.textContent = `O chef Fogaça comentou: "Você acertou quase tudo, mas vacilou em um dos ingredientes da caixa misteriosa. Tem potencial!".`;
+        resultTitle.textContent = `🏆 Fim da Rodada ${currentRound} - Prato Excepcional!`;
+        feedbackText.textContent = `Os jurados provaram o ${currentChallenge.theme}. Bônus máximo de mercado por acertar os ingredientes perfeitos!`;
     } else {
-        resultTitle.textContent = "❌ Desastre na Cozinha!";
-        feedbackText.textContent = `Os jurados detestaram. "Isso aqui é um insulto à gastronomia!", disparou a chef Helena. Você errou os ingredientes da prova.`;
+        resultTitle.textContent = `⚠️ Fim da Rodada ${currentRound} - Críticas dos Chefs`;
+        feedbackText.textContent = `Você errou alguns ingredientes no mercado. Os jurados fizeram ressalvas severas sobre a combinação de sabores.`;
     }
+
+    checkRoundEnd();
 }
 
 function endRoundByTimeout() {
-    clearInterval(timerInterval);
-    clearInterval(rivalInterval);
-    clearInterval(cutInterval);
-    clearInterval(cookInterval);
+    stopAllTimers();
 
     gameScreen.classList.add('hidden');
     resultScreen.classList.remove('hidden');
 
-    resultTitle.textContent = "⏰ O Tempo Esgotou!";
-    feedbackText.textContent = "Você não conseguiu entregar todos os processos a tempo. O rival levou a melhor na rodada!";
-    rivalScore += 150;
-    rivalScoreDisplay.textContent = rivalScore;
+    resultTitle.textContent = `⏰ O Tempo Esgotou na Rodada ${currentRound}!`;
+    feedbackText.textContent = "Você não conseguiu entregar todos os processos a tempo e perdeu pontos valiosos para os rivais.";
+
+    checkRoundEnd();
+}
+
+function stopAllTimers() {
+    clearInterval(timerInterval);
+    clearInterval(rivalInterval);
+    clearInterval(cutInterval);
+    clearInterval(cookInterval);
+}
+
+function checkRoundEnd() {
+    if (currentRound < maxRounds) {
+        nextRoundBtn.textContent = "Ir para a Próxima Prova";
+    } else {
+        nextRoundBtn.textContent = "Ver Resultado Final da Temporada";
+    }
+}
+
+function handleNextRound() {
+    if (currentRound < maxRounds) {
+        currentRound++;
+        openMarket();
+    } else {
+        showFinalWinner();
+    }
+}
+
+function showFinalWinner() {
+    marketScreen.classList.add('hidden');
+    gameScreen.classList.add('hidden');
+    resultScreen.classList.remove('hidden');
+
+    // Descobrir quem venceu
+    let maxRivalScore = Math.max(rivals[0].score, rivals[1].score);
+
+    if (playerScore > maxRivalScore) {
+        resultTitle.textContent = "👑 VOCÊ É O NOVO MASTERCHEF!";
+        feedbackText.textContent = `Parabéns! Sua pontuação final foi de ${playerScore} pontos. Você superou os chefs rivais e conquistou o troféu da temporada!`;
+    } else {
+        resultTitle.textContent = "❌ Você foi Eliminado da Competição!";
+        feedbackText.textContent = `Sua pontuação final (${playerScore} pts) não foi suficiente contra os concorrentes. Mais sorte na próxima temporada!`;
+    }
+
+    nextRoundBtn.textContent = "Jogar Nova Temporada";
+    nextRoundBtn.onclick = startSeason;
 }

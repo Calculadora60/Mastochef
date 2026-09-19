@@ -125,6 +125,18 @@ header p {
     font-size: 1.1rem;
 }
 
+.rivals-hud {
+    display: flex;
+    justify-content: space-around;
+    width: 100%;
+    background-color: #222;
+    padding: 8px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    color: #aaa;
+    border: 1px solid #333;
+}
+
 .recipe-card {
     background-color: #262626;
     width: 100%;
@@ -145,7 +157,7 @@ header p {
     margin-bottom: 15px;
 }
 
-/* Mini-game 1: Corte (Timing Bar) */
+/* Mini-game 1: Corte */
 .timing-bar-container {
     width: 100%;
     height: 25px;
@@ -175,7 +187,7 @@ header p {
     background-color: #ff3b30;
 }
 
-/* Mini-game 2: Cocção (Temperatura) */
+/* Mini-game 2: Cocção */
 .temp-bar-container {
     width: 100%;
     height: 25px;
@@ -206,7 +218,7 @@ header p {
 /* Mini-game 3: Empratamento */
 .plate-target-area {
     width: 100%;
-    height: 70px;
+    height: 60px;
     background-color: #111;
     border-radius: 8px;
     display: flex;
@@ -218,8 +230,9 @@ header p {
 }
 
 .plate-draggable {
-    font-size: 2rem;
-    cursor: pointer;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #00c853;
 }
 
 .chef-feedback {

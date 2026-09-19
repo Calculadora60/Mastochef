@@ -3,29 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MasterChef Brasil: O Jogo</title>
+    <title>MasterChef Brasil: Temporada Completa</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <div class="game-container">
         <header>
-            <h1>🍳 MasterChef: A Batalha</h1>
-            <p id="mission-text">Prepare-se para entrar na cozinha mais famosa do mundo!</p>
+            <h1>🍳 MasterChef: Batalha de Temporada</h1>
+            <p id="mission-text">Sobreviva às 3 rodadas na cozinha mais exigente do mundo!</p>
         </header>
 
         <!-- Tela Inicial -->
         <div id="start-screen" class="screen">
             <div class="rules-box">
-                <p><strong>Dinâmica:</strong> Escolha os ingredientes corretos no Mercado, passe pelo mini-game de Corte, acerte o Ponto no Fogão e faça a Montagem perfeita antes do tempo acabar!</p>
+                <p><strong>Como Funciona:</strong> Você competirá contra dois chefs rivais em 3 Provas Eliminatórias. Escolha os ingredientes certos no Mercado, acerte o Timing de Corte e o Ponto da Cocção para vencer a temporada!</p>
             </div>
-            <button id="start-btn" class="btn">Abrir Caixa Misteriosa</button>
+            <button id="start-btn" class="btn">Entrar na Competição</button>
         </div>
 
         <!-- Fase 1: O Mercado (Escolha de Ingredientes) -->
         <div id="market-screen" class="screen hidden">
-            <h2 id="market-theme-title">Tema da Prova</h2>
-            <p>Escolha exatamente **3 ingredientes** que combinam com o prato:</p>
+            <h2 id="round-indicator">Rodada 1 de 3</h2>
+            <h3 id="market-theme-title">Tema da Prova</h3>
+            <p>Escolha exatamente **3 ingredientes** principais:</p>
             <div id="ingredients-grid" class="ingredients-grid">
                 <!-- Preenchido por JS -->
             </div>
@@ -37,9 +38,14 @@
             <div class="hud-top">
                 <div class="timer-box">⏱️ <span id="timer">45</span>s</div>
                 <div class="score-board">
-                    <span>Você: <strong id="player-score">0</strong></span> | 
-                    <span>Rival: <strong id="rival-score">0</strong></span>
+                    <span>Você: <strong id="player-score">0</strong></span>
                 </div>
+            </div>
+
+            <!-- Placar dos Concorrentes na Bancada -->
+            <div class="rivals-hud">
+                <span id="rival-1-info">👤 Chef rival 1: 0 pts</span>
+                <span id="rival-2-info">👤 Chef rival 2: 0 pts</span>
             </div>
 
             <!-- Card da Etapa Atual -->
@@ -66,17 +72,17 @@
                     <button id="action-btn-cook" class="btn minigame-action-btn">🔥 Tirar do Fogo (Ponto Certo)</button>
                 </div>
 
-                <!-- Mini-game 3: Empratamento (Estética) -->
+                <!-- Mini-game 3: Empratamento -->
                 <div id="minigame-plate" class="minigame-box hidden">
                     <div id="plate-target-area" class="plate-target-area">
-                        <div id="plate-draggable" class="plate-draggable">🥗</div>
+                        <div class="plate-draggable">🥗 Prato Concluído</div>
                     </div>
                     <button id="action-btn-plate" class="btn minigame-action-btn">🍽️ Servir aos Jurados</button>
                 </div>
             </div>
         </div>
 
-        <!-- Tela de Resultado / Avaliação dos Jurados -->
+        <!-- Tela de Resultado da Rodada -->
         <div id="result-screen" class="screen hidden">
             <h2 id="result-title">Avaliação do Juri</h2>
             <div class="chef-feedback">
