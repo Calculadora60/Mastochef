@@ -8,6 +8,7 @@ const timerDisplay = document.getElementById('timer');
 const playerScoreDisplay = document.getElementById('player-score');
 const rivalScoreDisplay = document.getElementById('rival-score');
 const currentRecipeName = document.getElementById('current-recipe-name');
+const progressBar = document.getElementById('progress-bar');
 
 const stepCut = document.getElementById('step-cut');
 const stepCook = document.getElementById('step-cook');
@@ -17,21 +18,50 @@ const btnCut = document.getElementById('btn-station-cut');
 const btnCook = document.getElementById('btn-station-cook');
 const btnPlate = document.getElementById('btn-station-plate');
 
+const cutLabel = document.getElementById('cut-label');
+const cookLabel = document.getElementById('cook-label');
+
 const resultTitle = document.getElementById('result-title');
 const feedbackText = document.getElementById('feedback-text');
 
-// Lista de pratos exigidos pelo programa
+// Receita com métodos de preparo reais da culinária
 const recipes = [
-    { name: "Risoto de Cogumelos", cutsNeeded: 3, cooksNeeded: 3 },
-    { name: "Filé ao Poivre com Batatas", cutsNeeded: 4, cooksNeeded: 4 },
-    { name: "Strogonoff de Frango Rápido", cutsNeeded: 2, cooksNeeded: 3 },
-    { name: "Salmão Grelhado com Aspargos", cutsNeeded: 2, cooksNeeded: 2 }
+    { 
+        name: "Risoto de Cogumelos", 
+        cutMethod: "Picar Brunoise", 
+        cookMethod: "Refogar em fogo alto", 
+        cutsNeeded: 4, 
+        cooksNeeded: 4 
+    },
+    { 
+        name: "Filé ao Poivre com Batatas", 
+        cutMethod: "Fatiar medalhões", 
+        cookMethod: "Selar na frigideira", 
+        cutsNeeded: 5, 
+        cooksNeeded: 5 
+    },
+    { 
+        name: "Strogonoff de Frango Rápido", 
+        cutMethod: "Cortar em cubos", 
+        cookMethod: "Flambar com conhaque", 
+        cutsNeeded: 3, 
+        cooksNeeded: 4 
+    },
+    { 
+        name: "Salmão Grelhado com Aspargos", 
+        cutMethod: "Limpar e aparar", 
+        cookMethod: "Grelhar com azeite", 
+        cutsNeeded: 3, 
+        cooksNeeded: 3 
+    }
 ];
 
 let currentRecipe = {};
 let currentStep = 'cut'; // 'cut', 'cook', 'plate'
 let actionProgress = 0;
 let targetActions = 3;
+let totalActionsRequired = 1;
+let currentTotalDone = 0;
 
 let timeLeft = 45;
 let timerInterval;
@@ -56,10 +86,16 @@ function startBattle() {
     currentRecipe = recipes[Math.floor(Math.random() * recipes.length)];
     currentRecipeName.textContent = currentRecipe.name;
 
-    // Resetar etapas
+    // Atualizar os textos dos métodos de preparo específicos da receita
+    cutLabel.textContent = currentRecipe.cutMethod;
+    cookLabel.textContent = currentRecipe.cookMethod;
+
+    // Resetar etapas e progresso
     currentStep = 'cut';
     actionProgress = 0;
     targetActions = currentRecipe.cutsNeeded;
+    totalActionsRequired = currentRecipe.cutsNeeded + currentRecipe.cooksNeeded + 1; // +1 para empratar
+    currentTotalDone = 0;
     
     rivalProgress = 0;
 
@@ -77,47 +113,47 @@ function startTimers() {
         timerDisplay.textContent = timeLeft;
 
         if (timeLeft <= 0) {
-            endRound("Tempo esgotado! Os pratos foram interrompidos.");
+            endRound("O tempo esgotado pelos jurados! Prato interrompido.");
         }
     }, 1000);
 
-    // IA do Oponente (rival simulando o ritmo na bancada ao lado)
+    // IA do Oponente (competitividade)
     rivalInterval = setInterval(() => {
-        rivalProgress += Math.random() * 1.5;
-        // Se o rival completar o prato antes
-        if (rivalProgress >= 15) {
+        rivalProgress += 0.8;
+        if (rivalProgress >= totalActionsRequired) {
             rivalScore += 100;
+            rivalScoreDisplay.textContent = rivalScore;
             rivalProgress = 0;
-            // Mostra um aviso rápido visual se quiser, ou deixa disputado
         }
     }, 1000);
 }
 
-// Função executada quando o jogador clica na estação ativa de trabalho
+// Mecânica principal de clique nas estações
 function progressAction(stationType) {
     if (stationType !== currentStep) return;
 
     actionProgress++;
+    currentTotalDone++;
+    updateProgressBar();
 
-    // Feedback visual dinâmico no botão
+    // Feedback dinâmico no botão
     if (currentStep === 'cut') {
-        btnCut.textContent = `🔪 Cortando... (${actionProgress}/${targetActions})`;
+        btnCut.textContent = `🔪 ${currentRecipe.cutMethod} (${actionProgress}/${targetActions})`;
     } else if (currentStep === 'cook') {
-        btnCook.textContent = `🔥 Cozinhando... (${actionProgress}/${targetActions})`;
+        btnCook.textContent = `🔥 ${currentRecipe.cookMethod} (${actionProgress}/${targetActions})`;
     }
 
-    // Verifica se concluiu a etapa atual
+    // Avança de etapa
     if (actionProgress >= targetActions) {
         if (currentStep === 'cut') {
             currentStep = 'cook';
             actionProgress = 0;
             targetActions = currentRecipe.cooksNeeded;
-            btnCut.textContent = `🔪 Estação de Corte (Pronto!)`;
+            btnCut.innerHTML = `🔪 ${currentRecipe.cutMethod} <span style="color:#4caf50;">(Feito)</span>`;
         } else if (currentStep === 'cook') {
             currentStep = 'plate';
-            btnCook.textContent = `🔥 Fogão / Grelha (Pronto!)`;
+            btnCook.innerHTML = `🔥 ${currentRecipe.cookMethod} <span style="color:#4caf50;">(Feito)</span>`;
         } else if (currentStep === 'plate') {
-            // Prato finalizado e entregue na passagem!
             finishDishSuccessfully();
             return;
         }
@@ -125,13 +161,17 @@ function progressAction(stationType) {
     }
 }
 
+function updateProgressBar() {
+    let percent = (currentTotalDone / totalActionsRequired) * 100;
+    if (percent > 100) percent = 100;
+    progressBar.style.width = percent + '%';
+}
+
 function updateUIState() {
-    // Gerencia ativação dos botões conforme a etapa
     btnCut.disabled = currentStep !== 'cut';
     btnCook.disabled = currentStep !== 'cook';
     btnPlate.disabled = currentStep !== 'plate';
 
-    // Atualiza badges visuais do topo
     if (currentStep === 'cut') {
         stepCut.className = "badge active";
         stepCook.className = "badge";
@@ -144,9 +184,6 @@ function updateUIState() {
         stepCut.className = "badge done";
         stepCook.className = "badge done";
         stepPlate.className = "badge active";
-    }
-
-    if(currentStep === 'plate') {
         btnPlate.textContent = "🍽️ Clique para Empratar e Servir!";
     }
 }
@@ -161,8 +198,8 @@ function finishDishSuccessfully() {
     gameScreen.classList.add('hidden');
     resultScreen.classList.remove('hidden');
 
-    resultTitle.textContent = "✨ Prato Entregue com Sucesso!";
-    feedbackText.textContent = `Os jurados provaram o seu ${currentRecipe.name}. "Excelente cozimento e técnica impecável!", disse o chef. Você marcou pontos importantes!`;
+    resultTitle.textContent = "✨ Prato Entregue com Excelência!";
+    feedbackText.textContent = `Os jurados provaram o seu ${currentRecipe.name}. A técnica de ${currentRecipe.cutMethod.toLowerCase()} e o ponto de ${currentRecipe.cookMethod.toLowerCase()} impressionaram a bancada!`;
 }
 
 function endRound(reason) {
@@ -172,8 +209,8 @@ function endRound(reason) {
     gameScreen.classList.add('hidden');
     resultScreen.classList.remove('hidden');
 
-    resultTitle.textContent = "⚠️ Bancada Paralisada!";
-    feedbackText.textContent = `${reason} O rival conseguiu entregar mais pratos e levou vantagem na rodada.`;
+    resultTitle.textContent = "⚠️ Bancada Lenta!";
+    feedbackText.textContent = `${reason} O rival foi mais rápido na execução e levou vantagem.`;
     
     rivalScore += 100;
     rivalScoreDisplay.textContent = rivalScore;

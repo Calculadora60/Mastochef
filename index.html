@@ -11,13 +11,13 @@
     <div class="game-container">
         <header>
             <h1>🔥 MasterChef: Batalha de Bancada</h1>
-            <p id="mission-text">Prepare o prato pedido antes do tempo esgotar!</p>
+            <p id="mission-text">Siga as técnicas exigidas pelos chefs antes do tempo esgotar!</p>
         </header>
 
         <!-- Tela Inicial -->
         <div id="start-screen" class="screen">
             <div class="rules-box">
-                <p><strong>Como Jogar:</strong> Siga a receita passo a passo (Cortar ➔ Cozinhar ➔ Montar). Fique de olho no progresso do seu oponente!</p>
+                <p><strong>Como Jogar:</strong> Clique repetidamente nas estações para executar as técnicas solicitadas (Corte ➔ Cozimento ➔ Empratamento). Supere o oponente!</p>
             </div>
             <button id="start-btn" class="btn">Entrar na Cozinha</button>
         </div>
@@ -35,17 +35,20 @@
             <div class="recipe-card">
                 <h3>Comando Atual:</h3>
                 <p id="current-recipe-name">Carregando...</p>
+                <div class="progress-container">
+                    <div id="progress-bar" class="progress-fill"></div>
+                </div>
                 <div class="progress-steps">
-                    <span id="step-cut" class="badge">1. Cortar</span>
-                    <span id="step-cook" class="badge">2. Cozinhar</span>
-                    <span id="step-plate" class="badge">3. Montar</span>
+                    <span id="step-cut" class="badge">1. Preparo</span>
+                    <span id="step-cook" class="badge">2. Cocção</span>
+                    <span id="step-plate" class="badge">3. Empratar</span>
                 </div>
             </div>
 
             <!-- Estações de Trabalho -->
             <div class="stations-grid">
-                <button id="btn-station-cut" class="station-btn" onclick="progressAction('cut')">🔪 Estação de Corte</button>
-                <button id="btn-station-cook" class="station-btn" onclick="progressAction('cook')" disabled>🔥 Fogão / Grelha</button>
+                <button id="btn-station-cut" class="station-btn" onclick="progressAction('cut')">🔪 <span id="cut-label">Estação de Corte</span></button>
+                <button id="btn-station-cook" class="station-btn" onclick="progressAction('cook')" disabled>🔥 <span id="cook-label">Fogão / Grelha</span></button>
                 <button id="btn-station-plate" class="station-btn" onclick="progressAction('plate')" disabled>🍽️ Passagem (Prato)</button>
             </div>
         </div>
