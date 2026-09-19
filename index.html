@@ -3,26 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MasterChef: Batalha na Cozinha</title>
+    <title>MasterChef Brasil: O Jogo</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <div class="game-container">
         <header>
-            <h1>🔥 MasterChef: Batalha de Bancada</h1>
-            <p id="mission-text">Siga as técnicas exigidas pelos chefs antes do tempo esgotar!</p>
+            <h1>🍳 MasterChef: A Batalha</h1>
+            <p id="mission-text">Prepare-se para entrar na cozinha mais famosa do mundo!</p>
         </header>
 
         <!-- Tela Inicial -->
         <div id="start-screen" class="screen">
             <div class="rules-box">
-                <p><strong>Como Jogar:</strong> Clique repetidamente nas estações para executar as técnicas solicitadas (Corte ➔ Cozimento ➔ Empratamento). Supere o oponente!</p>
+                <p><strong>Dinâmica:</strong> Escolha os ingredientes corretos no Mercado, passe pelo mini-game de Corte, acerte o Ponto no Fogão e faça a Montagem perfeita antes do tempo acabar!</p>
             </div>
-            <button id="start-btn" class="btn">Entrar na Cozinha</button>
+            <button id="start-btn" class="btn">Abrir Caixa Misteriosa</button>
         </div>
 
-        <!-- Tela de Jogo (Ação) -->
+        <!-- Fase 1: O Mercado (Escolha de Ingredientes) -->
+        <div id="market-screen" class="screen hidden">
+            <h2 id="market-theme-title">Tema da Prova</h2>
+            <p>Escolha exatamente **3 ingredientes** que combinam com o prato:</p>
+            <div id="ingredients-grid" class="ingredients-grid">
+                <!-- Preenchido por JS -->
+            </div>
+            <button id="confirm-market-btn" class="btn" disabled>Ir para a Bancada</button>
+        </div>
+
+        <!-- Fase 2: Estações de Mini-games -->
         <div id="game-screen" class="screen hidden">
             <div class="hud-top">
                 <div class="timer-box">⏱️ <span id="timer">45</span>s</div>
@@ -32,32 +42,47 @@
                 </div>
             </div>
 
+            <!-- Card da Etapa Atual -->
             <div class="recipe-card">
-                <h3>Comando Atual:</h3>
-                <p id="current-recipe-name">Carregando...</p>
-                <div class="progress-container">
-                    <div id="progress-bar" class="progress-fill"></div>
+                <h3 id="current-phase-title">Etapa: Preparo</h3>
+                <p id="phase-instruction">Clique no botão de ação no momento certo!</p>
+                
+                <!-- Mini-game 1: Corte (Timing de Barra) -->
+                <div id="minigame-cut" class="minigame-box">
+                    <div class="timing-bar-container">
+                        <div id="timing-target" class="timing-target"></div>
+                        <div id="timing-cursor" class="timing-cursor"></div>
+                    </div>
+                    <button id="action-btn-cut" class="btn minigame-action-btn">🔪 Cortar (Fatiamento Perfeito)</button>
                 </div>
-                <div class="progress-steps">
-                    <span id="step-cut" class="badge">1. Preparo</span>
-                    <span id="step-cook" class="badge">2. Cocção</span>
-                    <span id="step-plate" class="badge">3. Empratar</span>
-                </div>
-            </div>
 
-            <!-- Estações de Trabalho -->
-            <div class="stations-grid">
-                <button id="btn-station-cut" class="station-btn" onclick="progressAction('cut')">🔪 <span id="cut-label">Estação de Corte</span></button>
-                <button id="btn-station-cook" class="station-btn" onclick="progressAction('cook')" disabled>🔥 <span id="cook-label">Fogão / Grelha</span></button>
-                <button id="btn-station-plate" class="station-btn" onclick="progressAction('plate')" disabled>🍽️ Passagem (Prato)</button>
+                <!-- Mini-game 2: Cocção (Ponto da Carne/Cozimento) -->
+                <div id="minigame-cook" class="minigame-box hidden">
+                    <div class="temp-bar-container">
+                        <div class="temp-zone-green"></div>
+                        <div id="temp-indicator" class="temp-indicator"></div>
+                    </div>
+                    <p style="font-size:0.85rem; color:#aaa; margin-top:5px;">Pare na zona verde para o ponto ideal!</p>
+                    <button id="action-btn-cook" class="btn minigame-action-btn">🔥 Tirar do Fogo (Ponto Certo)</button>
+                </div>
+
+                <!-- Mini-game 3: Empratamento (Estética) -->
+                <div id="minigame-plate" class="minigame-box hidden">
+                    <div id="plate-target-area" class="plate-target-area">
+                        <div id="plate-draggable" class="plate-draggable">🥗</div>
+                    </div>
+                    <button id="action-btn-plate" class="btn minigame-action-btn">🍽️ Servir aos Jurados</button>
+                </div>
             </div>
         </div>
 
-        <!-- Tela de Resultado / Fim da Rodada -->
+        <!-- Tela de Resultado / Avaliação dos Jurados -->
         <div id="result-screen" class="screen hidden">
-            <h2 id="result-title">Fim do Tempo!</h2>
-            <p id="feedback-text">Calculando notas dos jurados...</p>
-            <button id="next-round-btn" class="btn">Próximo Prato</button>
+            <h2 id="result-title">Avaliação do Juri</h2>
+            <div class="chef-feedback">
+                <p id="feedback-text">O chef está provando...</p>
+            </div>
+            <button id="next-round-btn" class="btn">Próxima Prova</button>
         </div>
     </div>
 

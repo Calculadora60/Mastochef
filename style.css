@@ -6,8 +6,8 @@
 }
 
 body {
-    background-color: #121212;
-    color: #e0e0e0;
+    background-color: #111;
+    color: #f1f1f1;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -15,24 +15,24 @@ body {
 }
 
 .game-container {
-    background-color: #1e1e1e;
+    background-color: #1c1c1c;
     width: 95%;
     max-width: 650px;
     padding: 25px;
     border-radius: 12px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
     border: 1px solid #333;
     text-align: center;
 }
 
 header h1 {
-    color: #ff3b30;
-    font-size: 1.5rem;
+    color: #e50914;
+    font-size: 1.6rem;
     margin-bottom: 5px;
 }
 
 header p {
-    color: #888;
+    color: #999;
     font-size: 0.9rem;
     margin-bottom: 20px;
 }
@@ -49,20 +49,20 @@ header p {
 }
 
 .rules-box {
-    background-color: #2a2a2a;
+    background-color: #262626;
     padding: 15px;
     border-radius: 8px;
     font-size: 0.95rem;
     color: #ccc;
-    border-left: 4px solid #ff3b30;
+    border-left: 4px solid #e50914;
     text-align: left;
 }
 
 .btn {
-    background-color: #ff3b30;
+    background-color: #e50914;
     color: white;
     border: none;
-    padding: 14px 28px;
+    padding: 12px 24px;
     font-size: 1rem;
     font-weight: bold;
     border-radius: 6px;
@@ -70,16 +70,51 @@ header p {
     transition: background 0.2s, transform 0.1s;
 }
 
-.btn:hover {
-    background-color: #d32f2f;
+.btn:hover:not(:disabled) {
+    background-color: #b20710;
     transform: translateY(-2px);
+}
+
+.btn:disabled {
+    background-color: #444;
+    color: #777;
+    cursor: not-allowed;
+}
+
+/* Mercado / Grade de Ingredientes */
+.ingredients-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    width: 100%;
+}
+
+.ingredient-card {
+    background-color: #2a2a2a;
+    padding: 15px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.2s;
+    font-size: 0.95rem;
+    user-select: none;
+}
+
+.ingredient-card:hover {
+    background-color: #383838;
+}
+
+.ingredient-card.selected {
+    border-color: #e50914;
+    background-color: #4a2225;
+    font-weight: bold;
 }
 
 .hud-top {
     display: flex;
     justify-content: space-between;
     width: 100%;
-    background-color: #252525;
+    background-color: #262626;
     padding: 10px 15px;
     border-radius: 6px;
     font-weight: bold;
@@ -91,99 +126,118 @@ header p {
 }
 
 .recipe-card {
-    background-color: #252525;
+    background-color: #262626;
     width: 100%;
-    padding: 15px;
+    padding: 20px;
     border-radius: 8px;
     border: 1px solid #444;
 }
 
 .recipe-card h3 {
-    font-size: 0.9rem;
-    color: #aaa;
+    font-size: 1.1rem;
+    color: #fff;
     margin-bottom: 5px;
 }
 
 .recipe-card p {
-    font-size: 1.2rem;
-    color: #fff;
-    font-weight: bold;
-    margin-bottom: 12px;
+    font-size: 0.95rem;
+    color: #aaa;
+    margin-bottom: 15px;
 }
 
-/* Barra de Progresso do Prato */
-.progress-container {
+/* Mini-game 1: Corte (Timing Bar) */
+.timing-bar-container {
     width: 100%;
-    background-color: #333;
-    height: 10px;
-    border-radius: 5px;
-    margin-bottom: 12px;
+    height: 25px;
+    background-color: #111;
+    border-radius: 12px;
+    position: relative;
     overflow: hidden;
-}
-
-.progress-fill {
-    width: 0%;
-    height: 100%;
-    background-color: #00c853;
-    transition: width 0.1s ease;
-}
-
-.progress-steps {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-}
-
-.badge {
-    background-color: #333;
-    padding: 5px 10px;
-    border-radius: 4px;
-    font-size: 0.8rem;
-    color: #777;
+    margin-bottom: 15px;
     border: 1px solid #444;
 }
 
-.badge.active {
-    background-color: #007acc;
-    color: white;
-    border-color: #3399ff;
+.timing-target {
+    position: absolute;
+    left: 45%;
+    width: 15%;
+    height: 100%;
+    background-color: rgba(0, 200, 83, 0.5);
+    border-left: 2px solid #00c853;
+    border-right: 2px solid #00c853;
 }
 
-.badge.done {
-    background-color: #2e7d32;
-    color: white;
-    border-color: #4caf50;
+.timing-cursor {
+    position: absolute;
+    left: 0%;
+    width: 6px;
+    height: 100%;
+    background-color: #ff3b30;
+    transition: left 0.05s linear;
 }
 
-.stations-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+/* Mini-game 2: Cocção (Temperatura) */
+.temp-bar-container {
     width: 100%;
+    height: 25px;
+    background-color: #111;
+    border-radius: 12px;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 5px;
+    border: 1px solid #444;
 }
 
-.station-btn {
-    background-color: #2d2d2d;
-    color: #fff;
-    border: 2px solid #444;
-    padding: 15px;
-    font-size: 1.1rem;
-    font-weight: bold;
+.temp-zone-green {
+    position: absolute;
+    left: 60%;
+    width: 20%;
+    height: 100%;
+    background-color: #2e7d32;
+}
+
+.temp-indicator {
+    position: absolute;
+    left: 0%;
+    width: 8px;
+    height: 100%;
+    background-color: #ffcc00;
+}
+
+/* Mini-game 3: Empratamento */
+.plate-target-area {
+    width: 100%;
+    height: 70px;
+    background-color: #111;
     border-radius: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    margin-bottom: 15px;
+    border: 1px dashed #555;
+}
+
+.plate-draggable {
+    font-size: 2rem;
     cursor: pointer;
-    transition: all 0.2s;
-    text-align: left;
-    padding-left: 20px;
+    animation: bounce 1s infinite alternate;
 }
 
-.station-btn:hover:not(:disabled) {
-    background-color: #3d3d3d;
-    border-color: #ff3b30;
+@keyframes bounce {
+    0% { transform: scale(1); }
+    100% { transform: scale(1.15); }
 }
 
-.station-btn:disabled {
-    background-color: #191919;
-    color: #555;
-    border-color: #252525;
-    cursor: not-allowed;
+.chef-feedback {
+    background-color: #262626;
+    padding: 20px;
+    border-radius: 8px;
+    width: 100%;
+    min-height: 90px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #444;
+    text-align: center;
 }
