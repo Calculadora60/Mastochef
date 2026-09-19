@@ -3,41 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mini MasterChef JS</title>
+    <title>MasterChef: Batalha na Cozinha</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <div class="game-container">
         <header>
-            <h1>🍳 Mini MasterChef</h1>
-            <p id="mission-text">Bem-vindo ao provador! Prepare-se para cozinhar.</p>
+            <h1>🔥 MasterChef: Batalha de Bancada</h1>
+            <p id="mission-text">Prepare o prato pedido antes do tempo esgotar!</p>
         </header>
 
-        <!-- Tela Inicial / Botão de Início -->
+        <!-- Tela Inicial -->
         <div id="start-screen" class="screen">
-            <button id="start-btn" class="btn">Iniciar Competição</button>
+            <div class="rules-box">
+                <p><strong>Como Jogar:</strong> Siga a receita passo a passo (Cortar ➔ Cozinhar ➔ Montar). Fique de olho no progresso do seu oponente!</p>
+            </div>
+            <button id="start-btn" class="btn">Entrar na Cozinha</button>
         </div>
 
-        <!-- Tela de Jogo (Escolha de Ingredientes) -->
+        <!-- Tela de Jogo (Ação) -->
         <div id="game-screen" class="screen hidden">
-            <div class="timer-box">Tempo Restante: <span id="timer">30</span>s</div>
-            <h3>Escolha 3 ingredientes para o seu prato:</h3>
-            
-            <div id="ingredients-grid" class="grid">
-                <!-- Os ingredientes aparecerão aqui via JavaScript -->
+            <div class="hud-top">
+                <div class="timer-box">⏱️ <span id="timer">45</span>s</div>
+                <div class="score-board">
+                    <span>Você: <strong id="player-score">0</strong></span> | 
+                    <span>Rival: <strong id="rival-score">0</strong></span>
+                </div>
             </div>
 
-            <button id="cook-btn" class="btn" disabled>Apresentar aos Jurados</button>
+            <div class="recipe-card">
+                <h3>Comando Atual:</h3>
+                <p id="current-recipe-name">Carregando...</p>
+                <div class="progress-steps">
+                    <span id="step-cut" class="badge">1. Cortar</span>
+                    <span id="step-cook" class="badge">2. Cozinhar</span>
+                    <span id="step-plate" class="badge">3. Montar</span>
+                </div>
+            </div>
+
+            <!-- Estações de Trabalho -->
+            <div class="stations-grid">
+                <button id="btn-station-cut" class="station-btn" onclick="progressAction('cut')">🔪 Estação de Corte</button>
+                <button id="btn-station-cook" class="station-btn" onclick="progressAction('cook')" disabled>🔥 Fogão / Grelha</button>
+                <button id="btn-station-plate" class="station-btn" onclick="progressAction('plate')" disabled>🍽️ Passagem (Prato)</button>
+            </div>
         </div>
 
-        <!-- Tela de Resultado / Avaliação -->
+        <!-- Tela de Resultado / Fim da Rodada -->
         <div id="result-screen" class="screen hidden">
-            <h2 id="result-title">Avaliação do Juri</h2>
-            <div class="chef-feedback">
-                <p id="feedback-text">O chef está provando...</p>
-            </div>
-            <button id="restart-btn" class="btn">Jogar Novamente</button>
+            <h2 id="result-title">Fim do Tempo!</h2>
+            <p id="feedback-text">Calculando notas dos jurados...</p>
+            <button id="next-round-btn" class="btn">Próximo Prato</button>
         </div>
     </div>
 

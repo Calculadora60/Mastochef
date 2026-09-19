@@ -1,148 +1,180 @@
-// Elementos da DOM
 const startScreen = document.getElementById('start-screen');
 const gameScreen = document.getElementById('game-screen');
 const resultScreen = document.getElementById('result-screen');
 const startBtn = document.getElementById('start-btn');
-const cookBtn = document.getElementById('cook-btn');
-const restartBtn = document.getElementById('restart-btn');
-const missionText = document.getElementById('mission-text');
-const ingredientsGrid = document.getElementById('ingredients-grid');
+const nextRoundBtn = document.getElementById('next-round-btn');
+
 const timerDisplay = document.getElementById('timer');
+const playerScoreDisplay = document.getElementById('player-score');
+const rivalScoreDisplay = document.getElementById('rival-score');
+const currentRecipeName = document.getElementById('current-recipe-name');
+
+const stepCut = document.getElementById('step-cut');
+const stepCook = document.getElementById('step-cook');
+const stepPlate = document.getElementById('step-plate');
+
+const btnCut = document.getElementById('btn-station-cut');
+const btnCook = document.getElementById('btn-station-cook');
+const btnPlate = document.getElementById('btn-station-plate');
+
 const resultTitle = document.getElementById('result-title');
 const feedbackText = document.getElementById('feedback-text');
 
-// Dados do Jogo
-const challenges = [
-    {
-        theme: "Faça uma Massa Italiana de respeito!",
-        target: ["Massa", "Tomate", "Manjericão"]
-    },
-    {
-        theme: "O Desafio da Sobremesa: Faça um Doce!",
-        target: ["Chocolate", "Morango", "Leite Condensado"]
-    },
-    {
-        theme: "Prato Principal Rústico e Sofisticado!",
-        target: ["Carne Bovina", "Batata", "Alecrim"]
-    }
+// Lista de pratos exigidos pelo programa
+const recipes = [
+    { name: "Risoto de Cogumelos", cutsNeeded: 3, cooksNeeded: 3 },
+    { name: "Filé ao Poivre com Batatas", cutsNeeded: 4, cooksNeeded: 4 },
+    { name: "Strogonoff de Frango Rápido", cutsNeeded: 2, cooksNeeded: 3 },
+    { name: "Salmão Grelhado com Aspargos", cutsNeeded: 2, cooksNeeded: 2 }
 ];
 
-const allIngredients = [
-    { id: 1, name: "Massa" },
-    { id: 2, name: "Tomate" },
-    { id: 3, name: "Manjericão" },
-    { id: 4, name: "Chocolate" },
-    { id: 5, name: "Morango" },
-    { id: 6, name: "Leite Condensado" },
-    { id: 7, name: "Carne Bovina" },
-    { id: 8, name: "Batata" },
-    { id: 9, name: "Alecrim" },
-    { id: 10, name: "Alho" },
-    { id: 11, name: "Peixe" },
-    { id: 12, name: "Pimenta" }
-];
+let currentRecipe = {};
+let currentStep = 'cut'; // 'cut', 'cook', 'plate'
+let actionProgress = 0;
+let targetActions = 3;
 
-let currentChallenge = {};
-let selectedIngredients = [];
-let timeLeft = 30;
+let timeLeft = 45;
 let timerInterval;
+let rivalInterval;
 
-// Event Listeners
-startBtn.addEventListener('click', startGame);
-cookBtn.addEventListener('click', evaluateDish);
-restartBtn.addEventListener('click', resetGame);
+let playerScore = 0;
+let rivalScore = 0;
+let rivalProgress = 0;
 
-function startGame() {
+startBtn.addEventListener('click', startBattle);
+nextRoundBtn.addEventListener('click', startBattle);
+
+function startBattle() {
     startScreen.classList.add('hidden');
     resultScreen.classList.add('hidden');
     gameScreen.classList.remove('hidden');
 
-    selectedIngredients = [];
-    timeLeft = 30;
+    timeLeft = 45;
     timerDisplay.textContent = timeLeft;
+    
+    // Escolher prato aleatório
+    currentRecipe = recipes[Math.floor(Math.random() * recipes.length)];
+    currentRecipeName.textContent = currentRecipe.name;
 
-    // Escolher um desafio aleatório
-    currentChallenge = challenges[Math.floor(Math.random() * challenges.length)];
-    missionText.textContent = `Missão: ${currentChallenge.theme}`;
+    // Resetar etapas
+    currentStep = 'cut';
+    actionProgress = 0;
+    targetActions = currentRecipe.cutsNeeded;
+    
+    rivalProgress = 0;
 
-    renderIngredients();
-    startTimer();
+    updateUIState();
+    startTimers();
 }
 
-function renderIngredients() {
-    ingredientsGrid.innerHTML = '';
-    // Embaralhar ingredientes para dificultar
-    const shuffled = [...allIngredients].sort(() => 0.5 - Math.random());
-
-    shuffled.forEach(ing => {
-        const card = document.div;
-        const cardEl = document.createElement('div');
-        cardEl.classList.add('ingredient-card');
-        cardEl.textContent = ing.name;
-        cardEl.dataset.name = ing.name;
-
-        cardEl.addEventListener('click', () => toggleIngredient(cardEl, ing.name));
-        ingredientsGrid.appendChild(cardEl);
-    });
-}
-
-function toggleIngredient(cardEl, name) {
-    if (cardEl.classList.contains('selected')) {
-        cardEl.classList.remove('selected');
-        selectedIngredients = selectedIngredients.filter(item => item !== name);
-    } else {
-        if (selectedIngredients.length < 3) {
-            cardEl.classList.add('selected');
-            selectedIngredients.push(name);
-        }
-    }
-
-    // Habilita o botão de cozinhar apenas se tiver escolhido exatamente 3
-    cookBtn.disabled = selectedIngredients.length !== 3;
-}
-
-function startTimer() {
+function startTimers() {
     clearInterval(timerInterval);
+    clearInterval(rivalInterval);
+
+    // Relógio principal da partida
     timerInterval = setInterval(() => {
         timeLeft--;
         timerDisplay.textContent = timeLeft;
 
         if (timeLeft <= 0) {
-            clearInterval(timerInterval);
-            alert("O tempo acabou! Vamos ver o que deu para entregar...");
-            evaluateDish();
+            endRound("Tempo esgotado! Os pratos foram interrompidos.");
+        }
+    }, 1000);
+
+    // IA do Oponente (rival simulando o ritmo na bancada ao lado)
+    rivalInterval = setInterval(() => {
+        rivalProgress += Math.random() * 1.5;
+        // Se o rival completar o prato antes
+        if (rivalProgress >= 15) {
+            rivalScore += 100;
+            rivalProgress = 0;
+            // Mostra um aviso rápido visual se quiser, ou deixa disputado
         }
     }, 1000);
 }
 
-function evaluateDish() {
-    clearInterval(timerInterval);
-    gameScreen.classList.add('hidden');
-    resultScreen.classList.remove('hidden');
+// Função executada quando o jogador clica na estação ativa de trabalho
+function progressAction(stationType) {
+    if (stationType !== currentStep) return;
 
-    // Verificar quantos ingredientes batem com o alvo
-    let matches = 0;
-    currentChallenge.target.forEach(targetItem => {
-        if (selectedIngredients.includes(targetItem)) {
-            matches++;
+    actionProgress++;
+
+    // Feedback visual dinâmico no botão
+    if (currentStep === 'cut') {
+        btnCut.textContent = `🔪 Cortando... (${actionProgress}/${targetActions})`;
+    } else if (currentStep === 'cook') {
+        btnCook.textContent = `🔥 Cozinhando... (${actionProgress}/${targetActions})`;
+    }
+
+    // Verifica se concluiu a etapa atual
+    if (actionProgress >= targetActions) {
+        if (currentStep === 'cut') {
+            currentStep = 'cook';
+            actionProgress = 0;
+            targetActions = currentRecipe.cooksNeeded;
+            btnCut.textContent = `🔪 Estação de Corte (Pronto!)`;
+        } else if (currentStep === 'cook') {
+            currentStep = 'plate';
+            btnCook.textContent = `🔥 Fogão / Grelha (Pronto!)`;
+        } else if (currentStep === 'plate') {
+            // Prato finalizado e entregue na passagem!
+            finishDishSuccessfully();
+            return;
         }
-    });
-
-    // Dar feedback baseado no acerto
-    if (matches === 3) {
-        resultTitle.textContent = "🏆 Prato Perfeito!";
-        feedbackText.textContent = "Os chefs aplaudiram de pé! Os sabores estão equilibrados, o ponto está impecável e você entendeu perfeitamente a proposta da caixa misteriosa.";
-    } else if (matches === 2) {
-        resultTitle.textContent = "🥈 Bom Trabalho, mas...";
-        feedbackText.textContent = "O chef Jacquin gostou da sua ousadia, mas sentiu falta de harmonia em um dos elementos. Passou, mas por pouco!";
-    } else {
-        resultTitle.textContent = "❌ Desastre na Cozinha!";
-        feedbackText.textContent = "O chef Fogaça provou e odiou. 'Isso aqui é uma sola de sapato/um insulto à gastronomia!', disse ele. Você foi eliminado.";
+        updateUIState();
     }
 }
 
-function resetGame() {
-    resultScreen.classList.add('hidden');
-    startScreen.classList.remove('hidden');
-    missionText.textContent = "Bem-vindo ao provador! Prepare-se para cozinhar.";
+function updateUIState() {
+    // Gerencia ativação dos botões conforme a etapa
+    btnCut.disabled = currentStep !== 'cut';
+    btnCook.disabled = currentStep !== 'cook';
+    btnPlate.disabled = currentStep !== 'plate';
+
+    // Atualiza badges visuais do topo
+    if (currentStep === 'cut') {
+        stepCut.className = "badge active";
+        stepCook.className = "badge";
+        stepPlate.className = "badge";
+    } else if (currentStep === 'cook') {
+        stepCut.className = "badge done";
+        stepCook.className = "badge active";
+        stepPlate.className = "badge";
+    } else if (currentStep === 'plate') {
+        stepCut.className = "badge done";
+        stepCook.className = "badge done";
+        stepPlate.className = "badge active";
+    }
+
+    if(currentStep === 'plate') {
+        btnPlate.textContent = "🍽️ Clique para Empratar e Servir!";
+    }
+}
+
+function finishDishSuccessfully() {
+    clearInterval(timerInterval);
+    clearInterval(rivalInterval);
+
+    playerScore += 150;
+    playerScoreDisplay.textContent = playerScore;
+
+    gameScreen.classList.add('hidden');
+    resultScreen.classList.remove('hidden');
+
+    resultTitle.textContent = "✨ Prato Entregue com Sucesso!";
+    feedbackText.textContent = `Os jurados provaram o seu ${currentRecipe.name}. "Excelente cozimento e técnica impecável!", disse o chef. Você marcou pontos importantes!`;
+}
+
+function endRound(reason) {
+    clearInterval(timerInterval);
+    clearInterval(rivalInterval);
+
+    gameScreen.classList.add('hidden');
+    resultScreen.classList.remove('hidden');
+
+    resultTitle.textContent = "⚠️ Bancada Paralisada!";
+    feedbackText.textContent = `${reason} O rival conseguiu entregar mais pratos e levou vantagem na rodada.`;
+    
+    rivalScore += 100;
+    rivalScoreDisplay.textContent = rivalScore;
 }
