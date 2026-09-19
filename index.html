@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mini MasterChef JS</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="game-container">
+        <header>
+            <h1>🍳 Mini MasterChef</h1>
+            <p id="mission-text">Bem-vindo ao provador! Prepare-se para cozinhar.</p>
+        </header>
+
+        <!-- Tela Inicial / Botão de Início -->
+        <div id="start-screen" class="screen">
+            <button id="start-btn" class="btn">Iniciar Competição</button>
+        </div>
+
+        <!-- Tela de Jogo (Escolha de Ingredientes) -->
+        <div id="game-screen" class="screen hidden">
+            <div class="timer-box">Tempo Restante: <span id="timer">30</span>s</div>
+            <h3>Escolha 3 ingredientes para o seu prato:</h3>
+            
+            <div id="ingredients-grid" class="grid">
+                <!-- Os ingredientes aparecerão aqui via JavaScript -->
+            </div>
+
+            <button id="cook-btn" class="btn" disabled>Apresentar aos Jurados</button>
+        </div>
+
+        <!-- Tela de Resultado / Avaliação -->
+        <div id="result-screen" class="screen hidden">
+            <h2 id="result-title">Avaliação do Juri</h2>
+            <div class="chef-feedback">
+                <p id="feedback-text">O chef está provando...</p>
+            </div>
+            <button id="restart-btn" class="btn">Jogar Novamente</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
